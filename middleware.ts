@@ -6,10 +6,10 @@ const isProtectedRoute = createRouteMatcher([
   '/history(.*)',
 ])
 
-export default clerkMiddleware(async (auth, req) => {
+export default clerkMiddleware((auth, req) => {
   // 如果是受保护的路由，要求用户登录
   if (isProtectedRoute(req)) {
-    await auth.protect()
+    auth.protect()
   }
 })
 
