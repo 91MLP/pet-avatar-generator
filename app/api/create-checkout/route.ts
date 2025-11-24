@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
-    const { images } = await request.json()
+    const { images, generation_id } = await request.json()
 
     if (!images || !Array.isArray(images) || images.length !== 4) {
       return NextResponse.json(
@@ -36,11 +36,12 @@ export async function POST(request: NextRequest) {
       success_url: `${request.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${request.headers.get('origin')}/generate`,
       metadata: {
-        // 将图片 URLs 存储在 metadata 中
+        // 将图片 URLs 和 generation_id 存储在 metadata 中
         image_0: images[0],
         image_1: images[1],
         image_2: images[2],
         image_3: images[3],
+        generation_id: generation_id || '', // 数据库生成记录的 ID
       },
     })
 

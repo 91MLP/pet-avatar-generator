@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { NextRequest, NextResponse } from 'next/server'
+import { updateGeneration } from '@/lib/supabase'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-11-17.clover',
@@ -33,13 +34,35 @@ export async function POST(request: NextRequest) {
       session.metadata?.image_1,
       session.metadata?.image_2,
       session.metadata?.image_3,
-    ].filter(Boolean)
+    ].filter((img): img is string => Boolean(img))
 
     if (images.length !== 4) {
       return NextResponse.json(
         { error: '图片数据不完整' },
         { status: 400 }
       )
+    }
+
+    // 从 metadata 中获取 generation_id
+    const generationId = session.metadata?.generation_id
+
+    // 如果存在 generation_id，更新数据库记录
+    if (generationId) {
+      try {
+        await updateGeneration(generationId, {
+          hd_urls: images,
+          paid: true,
+          payment_id: session_id,
+          amount: session.amount_total ? session.amount_total / 100 : 0,
+        })
+        console.log(`Database updated for generation ${generationId}`)
+      } catch (dbError) {
+        console.error('Failed to update database:', dbError)
+        // 不阻止支付验证成功，即使数据库更新失败
+        // 用户仍然可以获取高清图片
+      }
+    } else {
+      console.log('No generation_id found, skipping database update')
     }
 
     // 返回高清图片 URLs

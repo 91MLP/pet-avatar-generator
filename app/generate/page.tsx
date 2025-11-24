@@ -4,12 +4,14 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useState, useEffect, Suspense } from 'react'
 import Image from 'next/image'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useUser } from '@clerk/nextjs'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 function GenerateContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { t } = useLanguage()
+  const { user } = useUser()
   const breed = searchParams.get('breed') || '未知品种'
   const style = searchParams.get('style') || 'cute'
 
@@ -17,9 +19,46 @@ function GenerateContent() {
   const [images, setImages] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState(0)
+  const [generationId, setGenerationId] = useState<string | null>(null)
 
   // 临时开关：true = Mock 数据，false = 真实 API
   const USE_MOCK_DATA = false
+
+  // 保存生成记录到数据库
+  const saveToDatabase = async (imageUrls: string[]) => {
+    if (!user) {
+      console.log('No user logged in, skipping database save')
+      return null
+    }
+
+    try {
+      const response = await fetch('/api/generations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          breed,
+          style,
+          preview_urls: imageUrls,
+          user_email: user.emailAddresses[0].emailAddress,
+          paid: false,
+        }),
+      })
+
+      if (response.ok) {
+        const generation = await response.json()
+        console.log('Generation saved to database:', generation.id)
+        return generation.id
+      } else {
+        console.error('Failed to save generation to database')
+        return null
+      }
+    } catch (error) {
+      console.error('Error saving to database:', error)
+      return null
+    }
+  }
 
   // 生成图片
   useEffect(() => {
@@ -75,6 +114,13 @@ function GenerateContent() {
           if (data.success && data.images) {
             setImages(data.images)
             setProgress(100)
+
+            // 保存到数据库
+            const genId = await saveToDatabase(data.images)
+            if (genId) {
+              setGenerationId(genId)
+              sessionStorage.setItem('generation_id', genId)
+            }
           } else {
             throw new Error('生成失败，请重试')
           }
@@ -88,7 +134,7 @@ function GenerateContent() {
     }
 
     generateImages()
-  }, [searchParams, router, breed, style])
+  }, [searchParams, router, breed, style, user])
 
   const handleRetry = () => {
     setIsGenerating(true)

@@ -15,6 +15,46 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 // 翻译字典
 const translations = {
   zh: {
+    // Hero 区域
+    'hero.title.line1': '用 AI 为你的宠物',
+    'hero.title.line2': '生成超萌 Q 版头像',
+    'hero.subtitle': '只需输入品种，几秒钟即可获得 4 张专属 Q 版头像，完美适配社交媒体、头像、周边制作',
+    'hero.tag.ai': 'AI 智能生成',
+    'hero.tag.fast': '秒级出图',
+    'hero.tag.hd': '高清无水印',
+    'hero.cta': '立即开始生成',
+    'hero.pricing': '2 张免费预览 + 2 张高清原图仅需 $4.99',
+    'hero.welcomeBack': '欢迎回来',
+
+    // Features 卖点
+    'features.title': '为什么选择我们',
+    'features.subtitle': '专业 AI 技术，极致用户体验',
+    'features.ai.title': '🎨 AI 智能生成',
+    'features.ai.desc': '基于先进的 AI 模型，自动理解宠物特征，生成独一无二的 Q 版形象',
+    'features.fast.title': '⚡ 秒级出图',
+    'features.fast.desc': '无需等待，输入品种后几秒钟即可获得 4 张精美头像',
+    'features.hd.title': '💎 高清无水印',
+    'features.hd.desc': '1024x1024 超高清分辨率，无水印，支持商业使用，永久下载',
+
+    // Examples 示例
+    'examples.title': '精美示例作品',
+    'examples.subtitle': '看看其他用户生成的可爱头像',
+
+    // Pricing Comparison
+    'pricing.title': '免费预览 vs 高清原图',
+    'pricing.subtitle': '看看升级后能获得什么',
+    'pricing.free.title': '免费预览',
+    'pricing.free.resolution': '512x512 分辨率',
+    'pricing.free.count': '2 张预览图',
+    'pricing.free.quality': '中等质量',
+    'pricing.free.use': '仅供预览',
+    'pricing.hd.title': '高清原图',
+    'pricing.hd.price': '$4.99',
+    'pricing.hd.resolution': '1024x1024 (4倍清晰)',
+    'pricing.hd.count': '全部 4 张',
+    'pricing.hd.quality': '超高清无损',
+    'pricing.hd.use': '可商用 + 永久下载',
+
     // 首页
     'home.title': '🐾 宠物 Q 版头像生成器',
     'home.subtitle': '输入你的宠物品种，生成超可爱的 Q 版头像',
@@ -113,10 +153,71 @@ const translations = {
     'breed.maineCoon': '缅因猫',
     'breed.orangeTabby': '橘猫',
 
+    // 导航栏
+    'nav.history': '历史记录',
+    'nav.welcome': '欢迎使用',
+
+    // 历史记录页面
+    'history.title': '我的生成记录',
+    'history.subtitle': '查看你之前生成的所有 Q 版头像',
+    'history.totalGenerations': '总生成数',
+    'history.paid': '已付费',
+    'history.images': '张图片',
+    'history.hdImages': '张高清图',
+    'history.view': '查看',
+    'history.download': '下载',
+    'history.empty.title': '还没有生成记录',
+    'history.empty.description': '开始生成你的第一个 Q 版宠物头像吧！',
+    'history.empty.cta': '立即开始生成',
+
+    // 认证
+    'auth.signIn': '登录',
+    'auth.signUp': '注册',
+
     // 通用
     'common.loading': '加载中...',
   },
   en: {
+    // Hero Section
+    'hero.title.line1': 'Generate Adorable',
+    'hero.title.line2': 'Q-version Pet Avatars with AI',
+    'hero.subtitle': 'Just enter the breed, get 4 exclusive Q-version avatars in seconds, perfect for social media, profiles, and merchandise',
+    'hero.tag.ai': 'AI Powered',
+    'hero.tag.fast': 'Instant Results',
+    'hero.tag.hd': 'HD & No Watermark',
+    'hero.cta': 'Start Generating Now',
+    'hero.pricing': '2 Free Previews + 2 HD Originals for $4.99',
+    'hero.welcomeBack': 'Welcome back',
+
+    // Features
+    'features.title': 'Why Choose Us',
+    'features.subtitle': 'Professional AI technology, ultimate user experience',
+    'features.ai.title': '🎨 AI Smart Generation',
+    'features.ai.desc': 'Based on advanced AI models, automatically understands pet features to create unique Q-version images',
+    'features.fast.title': '⚡ Instant Results',
+    'features.fast.desc': 'No waiting required, get 4 beautiful avatars in seconds after entering breed',
+    'features.hd.title': '💎 HD No Watermark',
+    'features.hd.desc': '1024x1024 ultra-high resolution, no watermark, commercial use supported, permanent download',
+
+    // Examples
+    'examples.title': 'Beautiful Examples',
+    'examples.subtitle': 'See cute avatars created by other users',
+
+    // Pricing Comparison
+    'pricing.title': 'Free Preview vs HD Original',
+    'pricing.subtitle': 'See what you get with the upgrade',
+    'pricing.free.title': 'Free Preview',
+    'pricing.free.resolution': '512x512 Resolution',
+    'pricing.free.count': '2 Preview Images',
+    'pricing.free.quality': 'Medium Quality',
+    'pricing.free.use': 'Preview Only',
+    'pricing.hd.title': 'HD Original',
+    'pricing.hd.price': '$4.99',
+    'pricing.hd.resolution': '1024x1024 (4x Clearer)',
+    'pricing.hd.count': 'All 4 Images',
+    'pricing.hd.quality': 'Ultra HD Lossless',
+    'pricing.hd.use': 'Commercial Use + Permanent Download',
+
     // Homepage
     'home.title': '🐾 Pet Q-version Avatar Generator',
     'home.subtitle': 'Enter your pet breed to generate super cute Q-version avatars',
@@ -214,6 +315,27 @@ const translations = {
     'breed.persian': 'Persian',
     'breed.maineCoon': 'Maine Coon',
     'breed.orangeTabby': 'Orange Tabby',
+
+    // Navigation
+    'nav.history': 'History',
+    'nav.welcome': 'Welcome',
+
+    // History Page
+    'history.title': 'My Generation History',
+    'history.subtitle': 'View all your previously generated Q-version avatars',
+    'history.totalGenerations': 'Total Generations',
+    'history.paid': 'Paid',
+    'history.images': 'images',
+    'history.hdImages': 'HD images',
+    'history.view': 'View',
+    'history.download': 'Download',
+    'history.empty.title': 'No Generations Yet',
+    'history.empty.description': 'Start generating your first Q-version pet avatar!',
+    'history.empty.cta': 'Start Generating',
+
+    // Authentication
+    'auth.signIn': 'Sign In',
+    'auth.signUp': 'Sign Up',
 
     // Common
     'common.loading': 'Loading...',

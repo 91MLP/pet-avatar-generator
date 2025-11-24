@@ -22,13 +22,16 @@ function CheckoutContent() {
 
         const images = JSON.parse(imagesData)
 
+        // 从 sessionStorage 获取 generation_id（用于链接数据库记录）
+        const generationId = sessionStorage.getItem('generation_id')
+
         // 调用 API 创建 Stripe Checkout Session
         const response = await fetch('/api/create-checkout', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ images }),
+          body: JSON.stringify({ images, generation_id: generationId }),
         })
 
         const data = await response.json()
