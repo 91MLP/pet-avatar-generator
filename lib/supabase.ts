@@ -1,17 +1,15 @@
 import { createClient } from '@supabase/supabase-js'
 
+// 获取环境变量，提供默认值以避免构建时错误
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+
 // 客户端 Supabase 实例（用于浏览器端）
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // 服务端 Supabase 实例（用于 API 路由）
 export function createServerSupabaseClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  return createClient(supabaseUrl, supabaseAnonKey)
 }
 
 // 数据库类型定义
