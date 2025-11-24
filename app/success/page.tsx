@@ -127,6 +127,15 @@ function SuccessContent() {
           </p>
         </div>
 
+        {/* 调试信息（已注释） */}
+        {/* <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-4 mb-6">
+          <p className="text-sm font-mono">
+            <strong>调试信息：</strong><br/>
+            图片数量: {images.length}<br/>
+            第一张 URL: {images[0]?.substring(0, 50)}...
+          </p>
+        </div> */}
+
         {/* 高清图片展示 */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -143,23 +152,25 @@ function SuccessContent() {
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             {images.map((img, index) => (
-              <div key={index} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 group">
-                <Image
-                  src={img}
-                  alt={`高清图 ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-                {/* 悬停显示下载按钮 */}
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
-                  <button
-                    onClick={() => handleDownload(img, index)}
-                    className="opacity-0 group-hover:opacity-100 bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold transition-all"
-                  >
-                    下载图 {index + 1}
-                  </button>
+              <div key={index}>
+                <div className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
+                  {img && (
+                    <Image
+                      src={img}
+                      alt={`高清图 ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  )}
                 </div>
+                {/* 下载按钮 */}
+                <button
+                  onClick={() => handleDownload(img, index)}
+                  className="w-full mt-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all text-sm"
+                >
+                  下载图 {index + 1}
+                </button>
               </div>
             ))}
           </div>

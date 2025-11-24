@@ -24,3 +24,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 确保图片在暗黑模式下正常显示 */
+img {
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  img {
+    filter: none !important;
+    color-scheme: light !important;
+  }
+}

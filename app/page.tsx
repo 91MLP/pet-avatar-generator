@@ -8,6 +8,27 @@ export default function Home() {
   const [breed, setBreed] = useState('')
   const [style, setStyle] = useState('cute')
 
+  // 品种映射表（中文显示 → 英文名称）
+  const breedMap: Record<string, string> = {
+    // 狗狗
+    '柴犬': 'Shiba Inu',
+    '金毛': 'Golden Retriever',
+    '哈士奇': 'Siberian Husky',
+    '柯基': 'Welsh Corgi',
+    '泰迪': 'Poodle',
+    '边牧': 'Border Collie',
+    '萨摩耶': 'Samoyed',
+    '拉布拉多': 'Labrador Retriever',
+    // 猫咪
+    '布偶猫': 'Ragdoll Cat',
+    '英短': 'British Shorthair',
+    '美短': 'American Shorthair',
+    '暹罗猫': 'Siamese Cat',
+    '波斯猫': 'Persian Cat',
+    '缅因猫': 'Maine Coon',
+    '橘猫': 'Orange Tabby Cat',
+  }
+
   const styles = [
     { id: 'cute', name: '软萌大头', description: '圆润可爱，大眼睛大头' },
     { id: 'chibi', name: 'Q 版贴纸', description: '二头身，贴纸风格' },
@@ -52,6 +73,35 @@ export default function Home() {
               placeholder="例如：金毛、柯基、柴犬、布偶猫..."
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-gray-900 placeholder-gray-400"
             />
+
+            {/* 常见品种快捷标签 */}
+            <div className="mt-3">
+              <p className="text-xs text-gray-500 mb-2">常见品种：</p>
+              <div className="flex flex-wrap gap-2">
+                {/* 狗狗品种 */}
+                {['柴犬', '金毛', '哈士奇', '柯基', '泰迪', '边牧', '萨摩耶', '拉布拉多'].map((dog) => (
+                  <button
+                    key={dog}
+                    type="button"
+                    onClick={() => setBreed(breedMap[dog])}
+                    className="px-3 py-1 text-sm bg-purple-50 text-purple-700 rounded-full hover:bg-purple-100 transition-all border border-purple-200"
+                  >
+                    🐕 {dog}
+                  </button>
+                ))}
+                {/* 猫咪品种 */}
+                {['布偶猫', '英短', '美短', '暹罗猫', '波斯猫', '缅因猫', '橘猫'].map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setBreed(breedMap[cat])}
+                    className="px-3 py-1 text-sm bg-pink-50 text-pink-700 rounded-full hover:bg-pink-100 transition-all border border-pink-200"
+                  >
+                    🐱 {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* 风格选择 */}

@@ -15,7 +15,7 @@ function GenerateContent() {
   const [error, setError] = useState<string | null>(null)
 
   // 临时开关：true = Mock 数据，false = 真实 API
-  const USE_MOCK_DATA = true
+  const USE_MOCK_DATA = false
 
   // 生成图片
   useEffect(() => {
@@ -125,13 +125,15 @@ function GenerateContent() {
               <div className="grid grid-cols-2 gap-4">
                 {images.slice(0, 2).map((img, index) => (
                   <div key={index} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
-                    <Image
-                      src={img}
-                      alt={`预览图 ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
+                    {img && (
+                      <Image
+                        src={img}
+                        alt={`预览图 ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    )}
                   </div>
                 ))}
               </div>
@@ -153,13 +155,15 @@ function GenerateContent() {
               <div className="grid grid-cols-2 gap-4">
                 {images.slice(2, 4).map((img, index) => (
                   <div key={index} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
-                    <Image
-                      src={img}
-                      alt={`锁定图 ${index + 3}`}
-                      fill
-                      className="object-cover blur-xl"
-                      unoptimized
-                    />
+                    {img && (
+                      <Image
+                        src={img}
+                        alt={`锁定图 ${index + 3}`}
+                        fill
+                        className="object-cover blur-xl"
+                        unoptimized
+                      />
+                    )}
                     <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                       <div className="text-white text-center">
                         <div className="text-4xl mb-2">🔒</div>
