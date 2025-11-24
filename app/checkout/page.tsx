@@ -2,10 +2,13 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useLanguage } from '@/contexts/LanguageContext'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 function CheckoutContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t } = useLanguage()
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -52,16 +55,17 @@ function CheckoutContent() {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+        <LanguageSwitcher />
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md">
           <div className="text-center">
             <div className="text-5xl mb-4">⚠️</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">支付创建失败</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('checkout.error')}</h1>
             <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={() => router.back()}
               className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-all"
             >
-              返回上一页
+              {t('checkout.back')}
             </button>
           </div>
         </div>
@@ -71,10 +75,22 @@ function CheckoutContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <LanguageSwitcher />
       <div className="bg-white rounded-2xl shadow-xl p-16 text-center">
         <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
-        <p className="text-xl font-semibold text-gray-700">正在跳转到支付页面...</p>
-        <p className="text-gray-500 mt-2">请稍候</p>
+        <p className="text-xl font-semibold text-gray-700">{t('checkout.title')}</p>
+        <p className="text-gray-500 mt-2">{t('checkout.wait')}</p>
+      </div>
+    </div>
+  )
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="bg-white rounded-2xl shadow-xl p-16 text-center">
+        <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
+        <p className="text-xl font-semibold text-gray-700">Loading...</p>
       </div>
     </div>
   )
@@ -82,14 +98,7 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-xl p-16 text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
-          <p className="text-xl font-semibold text-gray-700">加载中...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<LoadingFallback />}>
       <CheckoutContent />
     </Suspense>
   )
