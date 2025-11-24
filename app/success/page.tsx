@@ -1,10 +1,10 @@
 'use client'
 
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Image from 'next/image'
 
-export default function SuccessPage() {
+function SuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const sessionId = searchParams.get('session_id')
@@ -189,5 +189,20 @@ export default function SuccessPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl p-16 text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
+          <p className="text-xl font-semibold text-gray-700">加载中...</p>
+        </div>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   )
 }

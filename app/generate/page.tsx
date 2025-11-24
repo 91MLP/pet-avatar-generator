@@ -1,10 +1,10 @@
 'use client'
 
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Image from 'next/image'
 
-export default function GeneratePage() {
+function GenerateContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const breed = searchParams.get('breed') || '未知品种'
@@ -202,5 +202,22 @@ export default function GeneratePage() {
         )}
       </main>
     </div>
+  )
+}
+
+export default function GeneratePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+        <main className="container mx-auto px-4 py-16 max-w-4xl">
+          <div className="bg-white rounded-2xl shadow-xl p-16 text-center">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
+            <p className="text-xl font-semibold text-gray-700">加载中...</p>
+          </div>
+        </main>
+      </div>
+    }>
+      <GenerateContent />
+    </Suspense>
   )
 }
