@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react'
 import Image from 'next/image'
 import { useLanguage } from '@/contexts/LanguageContext'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
+import ShareButtons from '@/components/ShareButtons'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
@@ -185,6 +186,9 @@ function SuccessContent() {
             <p className="text-sm text-purple-900" dangerouslySetInnerHTML={{ __html: t('success.tip') }} />
           </div>
         </div>
+
+        {/* 分享按钮 */}
+        <ShareButtons />
 
         {/* 操作按钮 */}
         <div className="flex gap-4 justify-center">

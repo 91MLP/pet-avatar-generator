@@ -16,6 +16,7 @@ function GenerateContent() {
   const [isGenerating, setIsGenerating] = useState(true)
   const [images, setImages] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [progress, setProgress] = useState(0)
 
   // 临时开关：true = Mock 数据，false = 真实 API
   const USE_MOCK_DATA = false
@@ -32,10 +33,14 @@ function GenerateContent() {
       try {
         setIsGenerating(true)
         setError(null)
+        setProgress(0)
 
         if (USE_MOCK_DATA) {
-          // Mock 模式：模拟 2 秒生成时间
-          await new Promise(resolve => setTimeout(resolve, 2000))
+          // Mock 模式：模拟进度
+          for (let i = 0; i <= 100; i += 25) {
+            setProgress(i)
+            await new Promise(resolve => setTimeout(resolve, 500))
+          }
           const mockImages = [
             'https://placehold.co/1024x1024/a78bfa/white?text=Pet+Avatar+1',
             'https://placehold.co/1024x1024/ec4899/white?text=Pet+Avatar+2',
@@ -43,8 +48,11 @@ function GenerateContent() {
             'https://placehold.co/1024x1024/f472b6/white?text=Pet+Avatar+4',
           ]
           setImages(mockImages)
+          setProgress(100)
         } else {
           // 真实 API 模式
+          setProgress(25) // 开始请求
+
           const response = await fetch('/api/generate', {
             method: 'POST',
             headers: {
@@ -56,6 +64,8 @@ function GenerateContent() {
             }),
           })
 
+          setProgress(75) // 接收响应
+
           const data = await response.json()
 
           if (!response.ok) {
@@ -64,6 +74,7 @@ function GenerateContent() {
 
           if (data.success && data.images) {
             setImages(data.images)
+            setProgress(100)
           } else {
             throw new Error('生成失败，请重试')
           }
@@ -78,6 +89,17 @@ function GenerateContent() {
 
     generateImages()
   }, [searchParams, router, breed, style])
+
+  const handleRetry = () => {
+    setIsGenerating(true)
+    setError(null)
+    setProgress(0)
+    window.location.reload()
+  }
+
+  const handleGenerateMore = () => {
+    router.push('/')
+  }
 
   const handleUnlock = () => {
     // 将图片数据存储到 sessionStorage
@@ -105,11 +127,54 @@ function GenerateContent() {
         </div>
 
         {/* 生成中状态 */}
-        {isGenerating && (
+        {isGenerating && !error && (
           <div className="bg-white rounded-2xl shadow-xl p-16 text-center">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
             <p className="text-xl font-semibold text-gray-700">{t('generate.generating')}</p>
             <p className="text-gray-500 mt-2">{t('generate.wait')}</p>
+
+            {/* 进度条 */}
+            <div className="mt-6 max-w-md mx-auto">
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 h-3 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">{progress}%</p>
+            </div>
+          </div>
+        )}
+
+        {/* 错误状态 */}
+        {error && !isGenerating && (
+          <div className="bg-white rounded-2xl shadow-xl p-12 text-center max-w-2xl mx-auto">
+            <div className="text-6xl mb-4">😢</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              {t('generate.error.title') || '生成失败'}
+            </h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-yellow-900">
+                💡 {t('generate.error.tips') || '可能的原因：网络问题、AI 服务暂时不可用、或者品种输入不正确'}
+              </p>
+            </div>
+
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={handleRetry}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-semibold shadow-lg"
+              >
+                🔄 {t('generate.error.retry') || '重试'}
+              </button>
+              <button
+                onClick={handleGenerateMore}
+                className="bg-white text-purple-600 border-2 border-purple-600 px-8 py-3 rounded-lg hover:bg-purple-50 transition-all font-semibold"
+              >
+                ← {t('generate.error.back') || '返回首页'}
+              </button>
+            </div>
           </div>
         )}
 
@@ -144,6 +209,57 @@ function GenerateContent() {
               <p className="text-sm text-gray-500 mt-3">
                 {t('generate.previewNote')}
               </p>
+            </div>
+
+            {/* 质量对比说明 */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border-2 border-blue-200">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl">
+                    🔍
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    {t('generate.comparison.title') || '免费预览 vs 高清原图对比'}
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {/* 免费预览 */}
+                    <div className="bg-white rounded-lg p-4 border border-gray-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-green-600 font-semibold">✓ 免费预览</span>
+                      </div>
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        <li>• 分辨率：512x512</li>
+                        <li>• 适合：在线预览</li>
+                        <li>• 质量：中等</li>
+                        <li>• 限制：仅 2 张</li>
+                      </ul>
+                    </div>
+
+                    {/* 高清原图 */}
+                    <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg p-4 text-white">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-semibold">⭐ 高清原图 - $4.99</span>
+                      </div>
+                      <ul className="text-sm space-y-1">
+                        <li>• 分辨率：1024x1024 <strong>(4倍清晰)</strong></li>
+                        <li>• 适合：打印、商用、头像</li>
+                        <li>• 质量：超高清无损</li>
+                        <li>• 数量：全部 4 张</li>
+                        <li>• 无水印 + 永久下载</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p className="text-sm text-yellow-900">
+                      💡 <strong>{t('generate.comparison.tip') || '提示：'}</strong>
+                      {t('generate.comparison.desc') || '高清原图分辨率是预览图的 4 倍，细节更丰富，适合打印、制作周边或商业使用'}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* 需要解锁区域 */}
@@ -197,13 +313,13 @@ function GenerateContent() {
               </button>
             </div>
 
-            {/* 返回首页 */}
-            <div className="text-center">
+            {/* 返回首页和生成更多 */}
+            <div className="flex gap-4 justify-center">
               <button
-                onClick={() => router.push('/')}
-                className="text-gray-600 hover:text-gray-900 underline"
+                onClick={handleGenerateMore}
+                className="bg-white text-purple-600 border-2 border-purple-600 px-8 py-3 rounded-lg hover:bg-purple-50 transition-all font-semibold"
               >
-                {t('generate.back')}
+                ✨ {t('generate.generateMore') || '生成更多头像'}
               </button>
             </div>
           </div>
