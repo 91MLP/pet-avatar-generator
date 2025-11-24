@@ -160,21 +160,29 @@ function SuccessContent() {
           <div className="grid grid-cols-2 gap-4 mb-4">
             {images.map((img, index) => (
               <div key={index}>
-                <div className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
+                <div className="relative aspect-square rounded-lg overflow-hidden border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
                   {img && (
-                    <Image
-                      src={img}
-                      alt={`${t('success.alt.hd')}${index + 1}`}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
+                    <>
+                      {/* 高清原图：无水印、无模糊 */}
+                      <Image
+                        src={img}
+                        alt={`${t('success.alt.hd')}${index + 1}`}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                        quality={100}
+                      />
+                      {/* 高清标识 */}
+                      <div className="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs px-2 py-1 rounded shadow-lg font-semibold">
+                        ✨ 1024×1024 HD
+                      </div>
+                    </>
                   )}
                 </div>
                 {/* 下载按钮 */}
                 <button
                   onClick={() => handleDownload(img, index)}
-                  className="w-full mt-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all text-sm"
+                  className="w-full mt-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all text-sm font-semibold"
                 >
                   {t('success.download')}{index + 1}
                 </button>

@@ -193,15 +193,38 @@ function GenerateContent() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 {images.slice(0, 2).map((img, index) => (
-                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
+                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-300 bg-gray-100">
                     {img && (
-                      <Image
-                        src={img}
-                        alt={`${t('success.alt.preview')}${index + 1}`}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
+                      <>
+                        {/* 降质预览图：缩小 60% + 中度模糊 */}
+                        <div className="absolute inset-0 flex items-center justify-center p-8">
+                          <div className="relative w-full h-full scale-75">
+                            <Image
+                              src={img}
+                              alt={`${t('success.alt.preview')}${index + 1}`}
+                              fill
+                              className="object-contain blur-sm"
+                              unoptimized
+                              quality={50}
+                              style={{ imageRendering: 'pixelated' }}
+                            />
+                          </div>
+                        </div>
+                        {/* 明显水印 */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="text-gray-400 text-opacity-60 text-5xl font-bold transform -rotate-12 select-none">
+                            PREVIEW
+                          </div>
+                        </div>
+                        {/* 质量降低提示 */}
+                        <div className="absolute bottom-2 left-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded text-center">
+                          {t('generate.lowQuality')}
+                        </div>
+                        {/* 分辨率标识 */}
+                        <div className="absolute top-2 right-2 bg-yellow-600 text-white text-xs px-2 py-1 rounded font-semibold">
+                          512×512
+                        </div>
+                      </>
                     )}
                   </div>
                 ))}
@@ -227,27 +250,31 @@ function GenerateContent() {
                     {/* 免费预览 */}
                     <div className="bg-white rounded-lg p-4 border border-gray-200">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-green-600 font-semibold">✓ 免费预览</span>
+                        <span className="text-green-600 font-semibold">
+                          {t('generate.comparison.free') || '✓ 免费预览'}
+                        </span>
                       </div>
                       <ul className="text-sm text-gray-600 space-y-1">
-                        <li>• 分辨率：512x512</li>
-                        <li>• 适合：在线预览</li>
-                        <li>• 质量：中等</li>
-                        <li>• 限制：仅 2 张</li>
+                        <li>{t('generate.comparison.freeRes') || '• 分辨率：512x512'}</li>
+                        <li>{t('generate.comparison.freeSuit') || '• 适合：在线预览'}</li>
+                        <li>{t('generate.comparison.freeQuality') || '• 质量：中等'}</li>
+                        <li>{t('generate.comparison.freeLimit') || '• 限制：仅 2 张'}</li>
                       </ul>
                     </div>
 
                     {/* 高清原图 */}
                     <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg p-4 text-white">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="font-semibold">⭐ 高清原图 - $4.99</span>
+                        <span className="font-semibold">
+                          {t('generate.comparison.hd') || '⭐ 高清原图 - $4.99'}
+                        </span>
                       </div>
                       <ul className="text-sm space-y-1">
-                        <li>• 分辨率：1024x1024 <strong>(4倍清晰)</strong></li>
-                        <li>• 适合：打印、商用、头像</li>
-                        <li>• 质量：超高清无损</li>
-                        <li>• 数量：全部 4 张</li>
-                        <li>• 无水印 + 永久下载</li>
+                        <li dangerouslySetInnerHTML={{ __html: t('generate.comparison.hdRes') || '• 分辨率：1024x1024 <strong>(4倍清晰)</strong>' }} />
+                        <li>{t('generate.comparison.hdSuit') || '• 适合：打印、商用、头像'}</li>
+                        <li>{t('generate.comparison.hdQuality') || '• 质量：超高清无损'}</li>
+                        <li>{t('generate.comparison.hdCount') || '• 数量：全部 4 张'}</li>
+                        <li>{t('generate.comparison.hdExtra') || '• 无水印 + 永久下载'}</li>
                       </ul>
                     </div>
                   </div>
@@ -276,13 +303,19 @@ function GenerateContent() {
                 {images.slice(2, 4).map((img, index) => (
                   <div key={index} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
                     {img && (
-                      <Image
-                        src={img}
-                        alt={`${t('success.alt.locked')}${index + 3}`}
-                        fill
-                        className="object-cover blur-xl"
-                        unoptimized
-                      />
+                      <>
+                        <Image
+                          src={img}
+                          alt={`${t('success.alt.locked')}${index + 3}`}
+                          fill
+                          className="object-cover blur-xl"
+                          unoptimized
+                        />
+                        {/* 高清标识（模糊状态） */}
+                        <div className="absolute top-2 right-2 bg-purple-600 text-white text-xs px-2 py-1 rounded blur-sm">
+                          1024×1024
+                        </div>
+                      </>
                     )}
                     <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                       <div className="text-white text-center">

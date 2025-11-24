@@ -15,6 +15,40 @@ export default function ShareButtons({ breed }: ShareButtonsProps) {
 
   const shareUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
+  // 降级复制方法（兼容老旧浏览器）
+  const fallbackCopyTextToClipboard = (text: string) => {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.style.position = 'fixed'
+    textArea.style.top = '0'
+    textArea.style.left = '0'
+    textArea.style.width = '2em'
+    textArea.style.height = '2em'
+    textArea.style.padding = '0'
+    textArea.style.border = 'none'
+    textArea.style.outline = 'none'
+    textArea.style.boxShadow = 'none'
+    textArea.style.background = 'transparent'
+
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+
+    try {
+      const successful = document.execCommand('copy')
+      if (successful) {
+        alert(language === 'zh' ? '链接已复制到剪贴板！' : 'Link copied to clipboard!')
+      } else {
+        alert(language === 'zh' ? '复制失败，请手动复制' : 'Copy failed, please copy manually')
+      }
+    } catch (err) {
+      console.error('降级复制方法也失败了:', err)
+      alert(language === 'zh' ? '复制失败，请手动复制' : 'Copy failed, please copy manually')
+    }
+
+    document.body.removeChild(textArea)
+  }
+
   const handleShare = (platform: 'twitter' | 'facebook' | 'copy') => {
     const encodedText = encodeURIComponent(shareText)
     const encodedUrl = encodeURIComponent(shareUrl)
@@ -35,8 +69,23 @@ export default function ShareButtons({ breed }: ShareButtonsProps) {
         )
         break
       case 'copy':
-        navigator.clipboard.writeText(`${shareText} ${shareUrl}`)
-        alert(language === 'zh' ? '链接已复制到剪贴板！' : 'Link copied to clipboard!')
+        // 使用 Clipboard API 或降级到传统方法
+        const textToCopy = `${shareText} ${shareUrl}`
+
+        if (navigator.clipboard && window.isSecureContext) {
+          // 现代浏览器：使用 Clipboard API
+          navigator.clipboard.writeText(textToCopy)
+            .then(() => {
+              alert(language === 'zh' ? '链接已复制到剪贴板！' : 'Link copied to clipboard!')
+            })
+            .catch((err) => {
+              console.error('复制失败:', err)
+              fallbackCopyTextToClipboard(textToCopy)
+            })
+        } else {
+          // 降级方案：使用传统方法
+          fallbackCopyTextToClipboard(textToCopy)
+        }
         break
     }
   }
