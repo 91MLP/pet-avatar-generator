@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
     const stylePrompt = stylePrompts[style] || stylePrompts.cute
 
     // 构建完整的 prompt（优化版本，强调品种特征）
-    const prompt = `A ${breed} dog/cat, ${stylePrompt}, accurate breed characteristics, realistic breed features, breed-specific traits, distinctive markings and fur pattern, portrait view, centered composition, clean white background, high quality pet illustration, professional digital art, bright colors, well lit, vibrant, detailed and recognizable breed`
+    // 移除 "dog/cat" 以支持其他宠物，让 AI 自动识别品种类型
+    const prompt = `A ${breed} pet animal, ${stylePrompt}, accurate breed characteristics, realistic breed features, breed-specific traits, distinctive markings and fur pattern, portrait view, centered composition, clean white background, high quality pet illustration, professional digital art, bright colors, well lit, vibrant, detailed and recognizable breed`
 
     // 添加 negative prompt 避免黑色图片
     const negativePrompt = 'dark, black, shadow, night, low quality, blurry, distorted, ugly, bad anatomy, watermark'

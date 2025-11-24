@@ -56,6 +56,9 @@ export default function Home() {
           <p className="text-lg text-gray-600">
             输入你的宠物品种，生成超可爱的 Q 版头像
           </p>
+          <p className="text-sm text-gray-500 mt-2">
+            💡 目前支持狗狗和猫咪品种，效果最佳
+          </p>
         </div>
 
         {/* 表单区域 */}
