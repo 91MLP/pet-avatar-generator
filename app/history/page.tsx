@@ -16,6 +16,9 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [viewingGeneration, setViewingGeneration] = useState<Generation | null>(null)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
+  const [clearing, setClearing] = useState(false)
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -23,23 +26,63 @@ export default function HistoryPage() {
     }
   }, [isLoaded, user])
 
-  const fetchGenerations = async () => {
+  const fetchGenerations = async (retryCount = 0) => {
     try {
       setLoading(true)
-      const response = await fetch('/api/generations')
+      setError('')
+
+      // 添加超时控制（10秒）
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+      const response = await fetch('/api/generations', {
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
 
       if (!response.ok) {
-        throw new Error('Failed to fetch generations')
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
       const data = await response.json()
       setGenerations(data)
     } catch (err) {
       console.error('Error fetching generations:', err)
-      setError('Failed to load history')
+
+      // 如果是超时或网络错误，尝试重试（最多2次）
+      if (retryCount < 2 && (
+        err instanceof Error && (
+          err.name === 'AbortError' ||
+          err.message.includes('Failed to fetch') ||
+          err.message.includes('NetworkError')
+        )
+      )) {
+        console.log(`Retrying... (${retryCount + 1}/2)`)
+        setTimeout(() => fetchGenerations(retryCount + 1), 1000 * (retryCount + 1))
+        return
+      }
+
+      // 提供更友好的错误信息
+      let errorMessage = t('history.loadError') || '加载失败'
+      if (err instanceof Error) {
+        if (err.name === 'AbortError') {
+          errorMessage = t('history.loadTimeout') || '加载超时，请刷新重试'
+        } else if (err.message.includes('401')) {
+          errorMessage = t('history.loadUnauthorized') || '未授权，请重新登录'
+        } else if (err.message.includes('500')) {
+          errorMessage = t('history.loadServerError') || '服务器错误，请稍后重试'
+        }
+      }
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
+  }
+
+  // 处理图片加载失败
+  const handleImageError = (url: string) => {
+    setImageErrors(prev => new Set(prev).add(url))
   }
 
   // 查看图片功能
@@ -82,6 +125,55 @@ export default function HistoryPage() {
     }
   }
 
+  // 清除所有历史记录
+  const handleClearHistory = async () => {
+    try {
+      setClearing(true)
+
+      // 添加超时控制（10秒）
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+      const response = await fetch('/api/generations', {
+        method: 'DELETE',
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP ${response.status}`)
+      }
+
+      // 清除成功，刷新列表
+      setGenerations([])
+      setShowClearConfirm(false)
+      alert(t('history.clearSuccess') || '历史记录已清除')
+    } catch (error) {
+      console.error('Clear history error:', error)
+
+      // 提供更详细的错误信息
+      let errorMessage = t('history.clearError') || '清除失败，请重试'
+
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          errorMessage = t('history.clearTimeout') || '请求超时，请检查网络连接后重试'
+        } else if (error.message.includes('401')) {
+          errorMessage = t('history.clearUnauthorized') || '未授权，请重新登录'
+        } else if (error.message.includes('500')) {
+          errorMessage = t('history.clearServerError') || '服务器错误，请稍后重试'
+        } else if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+          errorMessage = t('history.clearNetworkError') || '网络错误，请检查网络连接'
+        }
+      }
+
+      alert(errorMessage)
+    } finally {
+      setClearing(false)
+    }
+  }
+
   if (!isLoaded || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -111,7 +203,7 @@ export default function HistoryPage() {
         {/* 用户信息卡片 */}
         <div className="max-w-6xl mx-auto mb-8">
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                   {user?.firstName?.[0] || user?.emailAddresses[0].emailAddress[0].toUpperCase()}
@@ -123,9 +215,19 @@ export default function HistoryPage() {
                   <p className="text-gray-600">{user?.emailAddresses[0].emailAddress}</p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-3xl font-bold text-purple-600">{generations.length}</p>
-                <p className="text-sm text-gray-600">{t('history.totalGenerations')}</p>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-purple-600">{generations.length}</p>
+                  <p className="text-sm text-gray-600">{t('history.totalGenerations')}</p>
+                </div>
+                {generations.length > 0 && (
+                  <button
+                    onClick={() => setShowClearConfirm(true)}
+                    className="px-4 py-2 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600 transition-all shadow-md hover:shadow-lg"
+                  >
+                    🗑️ {t('history.clearAll') || '清除历史'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -170,14 +272,24 @@ export default function HistoryPage() {
                 >
                   {/* 图片预览 */}
                   <div className="relative aspect-square bg-gray-100">
-                    {generation.preview_urls[0] && (
+                    {generation.preview_urls[0] && !imageErrors.has(generation.preview_urls[0]) ? (
                       <Image
                         src={generation.preview_urls[0]}
                         alt={`${generation.breed} - ${generation.style}`}
                         fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        onError={() => handleImageError(generation.preview_urls[0])}
                       />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                        <div className="text-center text-gray-500">
+                          <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <p className="text-sm">{t('history.imageExpired') || '图片已过期'}</p>
+                        </div>
+                      </div>
                     )}
                     {generation.paid && (
                       <div className="absolute top-3 right-3 px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full">
@@ -265,14 +377,26 @@ export default function HistoryPage() {
                   : viewingGeneration.preview_urls
                 ).map((url, index) => (
                   <div key={index} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                    <Image
-                      src={url}
-                      alt={`${viewingGeneration.breed} ${index + 1}`}
-                      fill
-                      className="object-contain"
-                      unoptimized
-                    />
-                    {!viewingGeneration.paid && (
+                    {!imageErrors.has(url) ? (
+                      <Image
+                        src={url}
+                        alt={`${viewingGeneration.breed} ${index + 1}`}
+                        fill
+                        className="object-contain"
+                        unoptimized
+                        onError={() => handleImageError(url)}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                        <div className="text-center text-gray-500">
+                          <svg className="w-20 h-20 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <p className="text-sm">{t('history.imageExpired') || '图片已过期'}</p>
+                        </div>
+                      </div>
+                    )}
+                    {!viewingGeneration.paid && !imageErrors.has(url) && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className="text-gray-400 text-opacity-60 text-4xl font-bold transform -rotate-12 select-none">
                           PREVIEW
@@ -300,6 +424,61 @@ export default function HistoryPage() {
                   {t('common.close') || '关闭'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 清除历史记录确认对话框 */}
+      {showClearConfirm && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={() => !clearing && setShowClearConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 警告图标 */}
+            <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            {/* 标题 */}
+            <h3 className="text-2xl font-bold text-gray-900 text-center mb-2">
+              {t('history.clearConfirm.title') || '确认清除历史记录？'}
+            </h3>
+
+            {/* 描述 */}
+            <p className="text-gray-600 text-center mb-6">
+              {t('history.clearConfirm.description') || '此操作将删除所有历史记录，且无法恢复。'}
+            </p>
+
+            {/* 提示信息 */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-yellow-800">
+                {t('history.clearConfirm.warning') || `⚠️ 即将删除 ${generations.length} 条记录`}
+              </p>
+            </div>
+
+            {/* 操作按钮 */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                disabled={clearing}
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-semibold disabled:opacity-50"
+              >
+                {t('common.cancel') || '取消'}
+              </button>
+              <button
+                onClick={handleClearHistory}
+                disabled={clearing}
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-semibold disabled:opacity-50"
+              >
+                {clearing ? (t('history.clearing') || '清除中...') : (t('history.confirmClear') || '确认清除')}
+              </button>
             </div>
           </div>
         </div>

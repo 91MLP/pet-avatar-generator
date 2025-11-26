@@ -4,12 +4,30 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 const isProtectedRoute = createRouteMatcher([
   '/dashboard(.*)',
   '/history(.*)',
+  '/api/generations(.*)',
+  '/api/credits(.*)',
+  '/api/generate-hd(.*)',
 ])
 
-export default clerkMiddleware((auth, req) => {
+// 定义公开路由（不需要认证）
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/generate(.*)',
+  '/api/generate',
+  '/api/credits/webhook(.*)', // Stripe webhook 不需要 Clerk 认证
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+])
+
+export default clerkMiddleware(async (auth, req) => {
+  // Webhook 路由跳过认证
+  if (isPublicRoute(req)) {
+    return
+  }
+
   // 如果是受保护的路由，要求用户登录
   if (isProtectedRoute(req)) {
-    auth.protect()
+    await auth.protect()
   }
 })
 

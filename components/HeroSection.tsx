@@ -25,12 +25,24 @@ export default function HeroSection() {
       <div className="absolute -bottom-8 left-1/2 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        {/* 免费试用横幅（仅未登录用户可见）*/}
+        {!isSignedIn && (
+          <div className="mb-6 animate-fade-in px-4">
+            <div className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full shadow-xl border-2 border-white/30 backdrop-blur-sm transform hover:scale-105 transition-all">
+              <span className="text-xl sm:text-2xl flex-shrink-0">🎁</span>
+              <span className="text-white font-bold text-xs sm:text-sm md:text-base leading-tight">
+                {t('hero.freeTrial') || '新用户免费获得 3 个积分！立即体验 AI 生成'}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* 登录用户欢迎信息 */}
         {isSignedIn && (
-          <div className="mb-6 animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-purple-100">
-              <span className="text-2xl">👋</span>
-              <span className="text-gray-700 font-medium">
+          <div className="mb-6 animate-fade-in px-4">
+            <div className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-purple-100 max-w-full">
+              <span className="text-xl sm:text-2xl flex-shrink-0">👋</span>
+              <span className="text-gray-700 font-medium text-xs sm:text-sm md:text-base truncate">
                 {t('hero.welcomeBack')}, <span className="text-purple-600 font-bold">{user?.firstName || user?.emailAddresses[0].emailAddress.split('@')[0]}</span>!
               </span>
             </div>

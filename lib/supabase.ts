@@ -117,3 +117,31 @@ export async function getGeneration(id: string) {
 
   return data as Generation
 }
+
+// 删除用户的所有生成记录
+export async function deleteAllUserGenerations(userId: string) {
+  try {
+    console.log('Deleting all generations for user:', userId)
+
+    const { data, error } = await supabase
+      .from('generations')
+      .delete()
+      .eq('user_id', userId)
+      .select()
+
+    if (error) {
+      console.error('Error deleting all user generations:', error)
+      throw new Error(`Database error: ${error.message}`)
+    }
+
+    console.log(`Successfully deleted ${data?.length || 0} generations for user ${userId}`)
+
+    return {
+      success: true,
+      deletedCount: data?.length || 0,
+    }
+  } catch (error) {
+    console.error('Unexpected error in deleteAllUserGenerations:', error)
+    throw error
+  }
+}

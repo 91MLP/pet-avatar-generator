@@ -3,10 +3,42 @@
 import { useLanguage } from '@/contexts/LanguageContext'
 import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
 export default function NavBar() {
   const { t, language, setLanguage } = useLanguage()
   const { user } = useUser()
+  const [credits, setCredits] = useState<number | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // 获取用户积分余额
+  useEffect(() => {
+    const fetchCredits = async () => {
+      if (!user) return
+
+      try {
+        const response = await fetch('/api/credits')
+        if (response.ok) {
+          const data = await response.json()
+          setCredits(data.credits)
+        }
+      } catch (error) {
+        console.error('Failed to fetch credits:', error)
+      }
+    }
+
+    fetchCredits()
+
+    // 监听页面可见性变化，从其他标签页返回时刷新积分
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user) {
+        fetchCredits()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [user])
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200 shadow-sm">
@@ -30,6 +62,25 @@ export default function NavBar() {
           {/* 中间：导航链接（仅登录用户可见）*/}
           <SignedIn>
             <div className="hidden md:flex items-center gap-6">
+              {/* 积分余额 */}
+              <Link
+                href="/credits"
+                className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border border-purple-200 rounded-lg px-3 py-2 transition-all"
+              >
+                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl font-bold text-purple-600">
+                    {credits !== null ? credits : '...'}
+                  </span>
+                  <span className="text-xs text-gray-600">
+                    {t('nav.credits') || '积分'}
+                  </span>
+                </div>
+              </Link>
+
+              {/* 历史记录 */}
               <Link
                 href="/history"
                 className="text-gray-700 hover:text-purple-600 font-medium transition-colors flex items-center gap-2"
@@ -42,8 +93,27 @@ export default function NavBar() {
             </div>
           </SignedIn>
 
-          {/* 右侧：语言切换 + 用户信息 + 认证 */}
+          {/* 右侧：语言切换 + 用户信息 + 认证 + 移动菜单按钮 */}
           <div className="flex items-center gap-3 sm:gap-4">
+            {/* 移动端菜单按钮（仅登录用户可见）*/}
+            <SignedIn>
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 text-gray-700 hover:text-purple-600 transition-colors"
+                aria-label="Toggle mobile menu"
+              >
+                {mobileMenuOpen ? (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </SignedIn>
+
             {/* 语言切换器 */}
             <div className="bg-gray-100 rounded-lg flex overflow-hidden">
               <button
@@ -97,6 +167,46 @@ export default function NavBar() {
           </div>
         </div>
       </div>
+
+      {/* 移动端菜单下拉（仅登录用户可见）*/}
+      <SignedIn>
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
+            <div className="container mx-auto px-4 py-4 space-y-3">
+              {/* 积分余额 */}
+              <Link
+                href="/credits"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg"
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm font-medium text-gray-700">
+                    {t('nav.credits') || '积分'}
+                  </span>
+                </div>
+                <span className="text-xl font-bold text-purple-600">
+                  {credits !== null ? credits : '...'}
+                </span>
+              </Link>
+
+              {/* 历史记录 */}
+              <Link
+                href="/history"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 p-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="font-medium">{t('nav.history')}</span>
+              </Link>
+            </div>
+          </div>
+        )}
+      </SignedIn>
     </nav>
   )
 }

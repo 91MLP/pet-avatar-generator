@@ -1,5 +1,9 @@
 import Replicate from 'replicate'
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@clerk/nextjs/server'
+import { hasEnoughCredits, deductCredits, getCreditsForStyle, getUserCredits } from '@/lib/credits'
+import { createGeneration } from '@/lib/supabase'
+import { clerkClient } from '@clerk/nextjs/server'
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
@@ -13,6 +17,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: '缺少必要参数' },
         { status: 400 }
+      )
+    }
+
+    // 验证用户身份
+    const authResult = await auth()
+    const userId = authResult.userId
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: '请先登录才能生成图片', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      )
+    }
+
+    // 获取该风格需要的积分
+    const requiredCredits = getCreditsForStyle(style)
+
+    // 检查用户是否有足够的积分
+    const hasCredits = await hasEnoughCredits(userId, requiredCredits)
+    if (!hasCredits) {
+      const currentCredits = await getUserCredits(userId)
+      return NextResponse.json(
+        {
+          error: `积分不足。生成 ${style} 风格需要 ${requiredCredits} 积分，你当前有 ${currentCredits} 积分`,
+          code: 'INSUFFICIENT_CREDITS',
+          required: requiredCredits,
+          current: currentCredits
+        },
+        { status: 402 } // 402 Payment Required
       )
     }
 
@@ -89,12 +122,52 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // 生成成功，扣除积分
+    const deductResult = await deductCredits(userId, requiredCredits, `generation_${Date.now()}`)
+
+    if (!deductResult.success) {
+      console.error('Failed to deduct credits after generation')
+      // 即使扣除失败，仍返回图片（用户已经生成了）
+    }
+
+    // 保存生成记录到数据库
+    try {
+      // 获取用户邮箱
+      let userEmail: string | undefined
+      try {
+        const client = await clerkClient()
+        const user = await client.users.getUser(userId)
+        userEmail = user.emailAddresses[0]?.emailAddress
+      } catch (emailError) {
+        console.log('Could not fetch user email:', emailError)
+        // 继续执行,userEmail 为 undefined
+      }
+
+      // 创建生成记录
+      const generation = await createGeneration({
+        user_id: userId,
+        user_email: userEmail,
+        breed: breed,
+        style: style,
+        preview_urls: images,
+        hd_urls: images, // 当前使用相同的图片，支付后可以替换为真正的高清图
+        paid: true, // 由于已经扣除积分，标记为已支付
+      })
+
+      console.log('Generation record created:', generation.id)
+    } catch (error) {
+      console.error('Failed to save generation record:', error)
+      // 不影响返回结果，只记录错误
+    }
+
     // 返回生成的图片 URLs
     return NextResponse.json({
       success: true,
       images: images,
       breed: breed,
       style: style,
+      creditsUsed: requiredCredits,
+      remainingCredits: deductResult.remainingCredits,
     })
 
   } catch (error) {

@@ -3,7 +3,7 @@ import HeroSection from '@/components/HeroSection'
 import GeneratorForm from '@/components/GeneratorForm'
 import FeaturesSection from '@/components/FeaturesSection'
 import ExamplesSection from '@/components/ExamplesSection'
-import PricingComparison from '@/components/PricingComparison'
+import CreditSystemInfo from '@/components/PricingComparison'
 
 export default function Home() {
   return (
@@ -23,8 +23,8 @@ export default function Home() {
       {/* 示例作品 */}
       <ExamplesSection />
 
-      {/* 价格对比 */}
-      <PricingComparison />
+      {/* 积分系统说明 */}
+      <CreditSystemInfo />
 
       {/* 页脚 */}
       <footer className="bg-gray-900 text-white py-8">

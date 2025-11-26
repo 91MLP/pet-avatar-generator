@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { createGeneration, getUserGenerations } from '@/lib/supabase'
+import { createGeneration, getUserGenerations, deleteAllUserGenerations } from '@/lib/supabase'
 
 // POST /api/generations - 创建新的生成记录
 export async function POST(request: NextRequest) {
@@ -76,6 +76,48 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching generations:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE /api/generations - 删除用户的所有生成记录
+export async function DELETE(request: NextRequest) {
+  try {
+    // 验证用户身份
+    const authResult = await auth()
+    const userId = authResult.userId
+
+    console.log('DELETE /api/generations - User:', userId)
+
+    if (!userId) {
+      console.error('DELETE /api/generations - No userId found')
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // 删除用户的所有生成记录
+    console.log('Deleting all generations for user:', userId)
+    const result = await deleteAllUserGenerations(userId)
+    console.log('Delete result:', result)
+
+    return NextResponse.json(
+      { success: true, message: 'All generations deleted successfully' },
+      { status: 200 }
+    )
+  } catch (error) {
+    console.error('Error deleting generations:', error)
+
+    // 返回更详细的错误信息
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+
+    return NextResponse.json(
+      {
+        error: 'Failed to delete generations',
+        details: errorMessage,
+      },
       { status: 500 }
     )
   }

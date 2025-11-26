@@ -63,7 +63,7 @@ export default function ExamplesSection() {
         </div>
 
         {/* 示例网格 */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-5xl mx-auto">
           {examples.map((example) => (
             <div
               key={example.id}
@@ -85,7 +85,7 @@ export default function ExamplesSection() {
                     {example.breed}
                   </p>
                   <p className="text-white/80 text-xs md:text-sm">
-                    Q 版头像示例
+                    {t('examples.sample') || 'Q 版头像示例'}
                   </p>
                 </div>
               </div>
@@ -98,12 +98,31 @@ export default function ExamplesSection() {
 
         {/* 底部提示 */}
         <div className="text-center mt-12">
-          <p className="text-gray-500 text-sm md:text-base mb-4">
-            {t('home.tip')}
-          </p>
-          <p className="text-gray-400 text-xs">
-            💡 提示：以上为真实宠物照片示例，点击生成按钮即可获得专属 Q 版头像
-          </p>
+          <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-full border border-purple-200 mb-6">
+            <span className="text-lg">✨</span>
+            <p className="text-gray-700 text-sm md:text-base font-medium">
+              {t('examples.hint') || '以上为真实宠物照片，生成后将获得可爱的 Q 版头像'}
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => {
+                const formElement = document.getElementById('generator-form')
+                if (formElement) {
+                  formElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+              }}
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl"
+            >
+              {t('examples.tryNow') || '立即生成我的宠物头像'}
+            </button>
+            <a
+              href="/history"
+              className="px-6 py-3 bg-white text-purple-600 border-2 border-purple-600 font-semibold rounded-lg hover:bg-purple-50 transition-all"
+            >
+              {t('examples.viewMore') || '查看更多示例'}
+            </a>
+          </div>
         </div>
       </div>
     </section>
