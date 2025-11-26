@@ -302,6 +302,18 @@ const translations = {
     'history.clearConfirm.description': '此操作将删除所有历史记录，且无法恢复。',
     'history.clearConfirm.warning': '⚠️ 即将删除所有记录',
 
+    // 社交分享
+    'share.title': '分享你的创作',
+    'share.description': '分享到社交媒体，让更多人看到你可爱的宠物头像！',
+    'share.text': '我用 AI 给我的宠物生成了超萌的 Q 版头像！快来试试吧！',
+    'share.defaultText': '用 AI 为你的宠物生成超可爱的 Q 版头像！免费试用！',
+    'share.copyLink': '复制链接',
+    'share.copied': '已复制',
+    'share.download': '下载图片',
+    'share.instagram': 'Instagram',
+    'share.wechatHint': '💡 提示：复制链接后可以分享到微信、QQ 等社交平台',
+    'share.mobileHint': '💡 提示：点击 Instagram 按钮可直接分享图片到 Instagram、微信等应用',
+
     // 认证
     'auth.signIn': '登录',
     'auth.signUp': '注册',
@@ -597,6 +609,18 @@ const translations = {
     'history.clearNetworkError': 'Network error, please check your connection',
     'history.clearConfirm.title': 'Clear all history?',
     'history.clearConfirm.description': 'This action will delete all history records and cannot be undone.',
+
+    // Social Sharing
+    'share.title': 'Share Your Creation',
+    'share.description': 'Share on social media to let more people see your cute pet avatar!',
+    'share.text': 'I created an adorable Q-version avatar for my pet with AI! Try it now!',
+    'share.defaultText': 'Generate super cute Q-version pet avatars with AI! Free trial available!',
+    'share.copyLink': 'Copy Link',
+    'share.copied': 'Copied',
+    'share.download': 'Download',
+    'share.instagram': 'Instagram',
+    'share.wechatHint': '💡 Tip: Copy the link to share on social platforms',
+    'share.mobileHint': '💡 Tip: Click Instagram button to share directly to Instagram and other apps',
     'history.clearConfirm.warning': '⚠️ About to delete all records',
 
     // Authentication

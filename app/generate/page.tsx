@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react'
 import Image from 'next/image'
 import { useLanguage } from '@/contexts/LanguageContext'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
+import SocialShare from '@/components/SocialShare'
 import Link from 'next/link'
 import { SignInButton } from '@clerk/nextjs'
 
@@ -511,6 +512,15 @@ function GenerateContent() {
                     </ul>
                   </div>
                 </div>
+              </div>
+
+              {/* 社交分享 */}
+              <div className="mt-6">
+                <SocialShare
+                  imageUrl={images[0]}
+                  breed={breed}
+                  style={style}
+                />
               </div>
             </div>
 
